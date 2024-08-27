@@ -55,7 +55,7 @@ class _PermissionSplashScreenState extends State<PermissionSplashScreen> {
         MaterialPageRoute(
           builder: (context) => MyHomePage(
             title: 'Carreata',
-            latitudeInit: position.latitude, // Valores padrão não são necessários
+            latitudeInit: position.latitude,
             longitudeInit: position.longitude,
           ),
         ),

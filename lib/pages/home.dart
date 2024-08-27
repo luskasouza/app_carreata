@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({
@@ -22,6 +24,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   late double _latitude;
   late double _longitude;
+  late MapController mapController = MapController();
 
   @override
   void initState() {
@@ -46,6 +49,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
+        mapController.move(LatLng(_latitude, _longitude),
+            17.0); // Move the map to the new location
       });
     }
   }
@@ -58,6 +63,8 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _latitude = position.latitude;
         _longitude = position.longitude;
+        mapController.move(LatLng(_latitude, _longitude),
+            17.0); // Move the map to the new location
         print("${_latitude.toString()}; ${_longitude.toString()}");
       });
     } else {
@@ -76,40 +83,52 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        elevation: 0.0,
+        toolbarHeight: 0.0,
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          alignment: Alignment.topCenter,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            Text(
-              'Latitude: $_latitude',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            Text(
-              'Longitude: $_longitude',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 20), // Espaço entre os textos e o botão
-            ElevatedButton(
-              onPressed: _updateLocation,
-              child: const Text('Atualizar Localização'),
+            FlutterMap(
+              mapController: mapController,
+              options: MapOptions(
+                initialZoom: 17.0,
+                maxZoom: 18.4,
+                minZoom: 3.0,
+                crs: const Epsg3857(),
+                onTap: (tapPosition, latlng) {
+                  // Handle map tap if needed
+                },
+                initialRotation: 0.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'http://{s}.google.com/vt?lyrs=s,h&x={x}&y={y}&z={z}',
+                  subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                ),
+                MarkerLayer(markers: [
+                  Marker(
+                    width: 80.0,
+                    height: 80.0,
+                    point: LatLng(_latitude, _longitude),
+                    child: const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 40,
+                    ),
+                  ),
+                ]),
+              ],
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: _updateLocation,
+        tooltip: 'Atualizar Localização',
+        child: const Icon(Icons.share_location),
       ),
     );
   }
